@@ -1,13 +1,13 @@
 /*************************************************************************
-  * @ÎÄ¼ş:EepromFs.c
-  * @×÷Õß:XY
-  * @°æ±¾:1.0,Copyright 2019 by XY.
-  * @ÈÕÆÚ:2019-09-11
-  * @¹¦ÄÜ:
-  * @±¸×¢:
-        1¡¢¹Ì¶¨´óĞ¡ÎÄ¼şEepromÎÄ¼şÏµÍ³¡£
-        2¡¢²ÉÓÃÁ´±í·½Ê½°ÑËùÓĞÎÄ¼ş´®ÁªÆğÀ´£¬Ìæ´úÎÄ¼şĞÅÏ¢±í·½Ê½¡£
-        3¡¢Ë«ÏòÁ´±í·½Ê½ÓÃÓÚÒì³£»Ö¸´ÎÄ¼şĞÅÏ¢¡£
+  * @æ–‡ä»¶:EepromFs.c
+  * @ä½œè€…:XY
+  * @ç‰ˆæœ¬:1.0,Copyright 2019 by XY.
+  * @æ—¥æœŸ:2019-09-11
+  * @åŠŸèƒ½:
+  * @å¤‡æ³¨:
+        1ã€å›ºå®šå¤§å°æ–‡ä»¶Eepromæ–‡ä»¶ç³»ç»Ÿã€‚
+        2ã€é‡‡ç”¨é“¾è¡¨æ–¹å¼æŠŠæ‰€æœ‰æ–‡ä»¶ä¸²è”èµ·æ¥ï¼Œæ›¿ä»£æ–‡ä»¶ä¿¡æ¯è¡¨æ–¹å¼ã€‚
+        3ã€åŒå‘é“¾è¡¨æ–¹å¼ç”¨äºå¼‚å¸¸æ¢å¤æ–‡ä»¶ä¿¡æ¯ã€‚
 *************************************************************************/
 #define __EEPROMFS_C__
 #include "EepromFs.h"
@@ -16,11 +16,11 @@ static fs_meta_t fs_meta={-1};
 static eeprom_handle_t *eeprom_handle=NULL;
 static unsigned char fs_buff[FS_BUFF_LEN];
 #define FS_FORMAT_BUFF_LEN  512
-//ÎÄ¼şĞÅÏ¢³¤¶È
-#define FILE_HANDLE_INFO_LEN   ((int)&(((file_handle_t *)0)->fileCrc))//ÎÄ¼şĞÅÏ¢³¤¶È²»º¬Êı¾İCrc  
-#define FILE_HANDLE_STORE_LEN ((int)&(((file_handle_t *)0)->addr_fileCrc))//ÎÄ¼şĞÅÏ¢³¤¶È
+//æ–‡ä»¶ä¿¡æ¯é•¿åº¦
+#define FILE_HANDLE_INFO_LEN   ((int)&(((file_handle_t *)0)->fileCrc))//æ–‡ä»¶ä¿¡æ¯é•¿åº¦ä¸å«æ•°æ®Crc  
+#define FILE_HANDLE_STORE_LEN ((int)&(((file_handle_t *)0)->addr_fileCrc))//æ–‡ä»¶ä¿¡æ¯é•¿åº¦
 
-//ÄÚ²¿º¯ÊıÉùÃ÷
+//å†…éƒ¨å‡½æ•°å£°æ˜
 static eepromfs_result_t __eepromfs_seekLastFile(file_handle_t *fh);
 
 #if FUN_MATH_CRC16_LH_ENABLE==1
@@ -46,8 +46,8 @@ unsigned short Math_CRC16_LH(unsigned char* buf, unsigned short len)
 #endif
 
 /*************************************************************************
-*º¯Êı:eepromfs_init
-*¹¦ÄÜ:³õÊ¼»¯
+*å‡½æ•°:eepromfs_init
+*åŠŸèƒ½:åˆå§‹åŒ–
 *************************************************************************/
 //extern u16 Math_CRC16_LH(u8* buf, u16 len);
 eepromfs_result_t eepromfs_init(eeprom_handle_t *handle,la_t startAddr)
@@ -55,29 +55,29 @@ eepromfs_result_t eepromfs_init(eeprom_handle_t *handle,la_t startAddr)
     file_handle_t fh;
     eepromfs_result_t eepromfs_result;
     eeprom_handle = handle;
-    //»ñÈ¡ÎÄ¼ş·ÖÇøĞÅÏ¢
+    //è·å–æ–‡ä»¶åˆ†åŒºä¿¡æ¯
     if(eeprom_handle->read(eeprom_handle,startAddr,(unsigned char *)&fs_meta,FS_META_LEN)!=EEPROM_OK)
     {
-        fs_meta.fs_size=0;//±êÊ¶·ÖÇøÎ´³õÊ¼»¯
-        //log·ÖÇøĞÅÏ¢¶ÁÈ¡´íÎó
+        fs_meta.fs_size=0;//æ ‡è¯†åˆ†åŒºæœªåˆå§‹åŒ–
+        //logåˆ†åŒºä¿¡æ¯è¯»å–é”™è¯¯
         return EFR_EEPROM_ERR;
     }
-    //crcĞ£Ñé
+    //crcæ ¡éªŒ
     if(Math_CRC16_LH((unsigned char *)&fs_meta,FS_META_LEN-2)!=fs_meta.fsCrc)
     {
-        fs_meta.fs_size=0;//±êÊ¶·ÖÇøÎ´³õÊ¼»¯
-        //log crcĞ£Ñé´íÎó   
+        fs_meta.fs_size=0;//æ ‡è¯†åˆ†åŒºæœªåˆå§‹åŒ–
+        //log crcæ ¡éªŒé”™è¯¯   
         return EFR_CRC_INFO_ERR;
     }
     
     if(fs_meta.start_address!=startAddr)
     {
-        fs_meta.fs_size=0;//±êÊ¶·ÖÇøÎ´³õÊ¼»¯
-        //log ÆğÊ¼µØÖ·´íÎó
+        fs_meta.fs_size=0;//æ ‡è¯†åˆ†åŒºæœªåˆå§‹åŒ–
+        //log èµ·å§‹åœ°å€é”™è¯¯
         return EFR_STARTADDR_ERR;
     }
 
-    //ÎÄ¼şË÷ÒıºË¶Ô
+    //æ–‡ä»¶ç´¢å¼•æ ¸å¯¹
     eepromfs_result=__eepromfs_seekLastFile(&fh);
     if((eepromfs_result!=EFR_OK)&&(eepromfs_result!=EFR_NO_FILE))
     {
@@ -89,31 +89,31 @@ eepromfs_result_t eepromfs_init(eeprom_handle_t *handle,la_t startAddr)
 
 
 /*************************************************************************
-*º¯Êı:eepromfs_format_quick
-*¹¦ÄÜ:¿ìËÙ¸ñÊ½»¯
-*²ÎÊı:startAddr ÆğÊ¼µØÖ·
-*·µ»Ø:²Ù×÷½á¹û
-*ËµÃ÷:¿ìËÙ¸ñÊ½»¯,²»¸Ä±ä´æ´¢Çø´óĞ¡,½öÇå³ıÎÄ¼ş´æ´¢ĞÅÏ¢
+*å‡½æ•°:eepromfs_format_quick
+*åŠŸèƒ½:å¿«é€Ÿæ ¼å¼åŒ–
+*å‚æ•°:startAddr èµ·å§‹åœ°å€
+*è¿”å›:æ“ä½œç»“æœ
+*è¯´æ˜:å¿«é€Ÿæ ¼å¼åŒ–,ä¸æ”¹å˜å­˜å‚¨åŒºå¤§å°,ä»…æ¸…é™¤æ–‡ä»¶å­˜å‚¨ä¿¡æ¯
 *************************************************************************/
-eepromfs_result_t eepromfs_format_quick(void)//¸ñÊ½»¯²»¸Ä±ä´óĞ¡
+eepromfs_result_t eepromfs_format_quick(void)//æ ¼å¼åŒ–ä¸æ”¹å˜å¤§å°
 {
     efs_size_t i=0;
     unsigned char temp=0;
     if((fs_meta.start_address+fs_meta.fs_size) > eeprom_handle->size)
     {
-        //log ¿Õ¼ä²»×ã
+        //log ç©ºé—´ä¸è¶³
         return EFR_NO_SPACE;
     }
-    //Çå¿Õeeprom¿Õ¼ä
+    //æ¸…ç©ºeepromç©ºé—´
     for(i=0;i<(fs_meta.fs_size-FS_META_LEN);i++)
     {
         if(eeprom_handle->write(eeprom_handle,fs_meta.start_address+FS_META_LEN+i,&temp,1)!=EEPROM_OK)
         {
-            //log ·ÖÇøĞÅÏ¢Ğ´Èë´íÎó
+            //log åˆ†åŒºä¿¡æ¯å†™å…¥é”™è¯¯
             return EFR_EEPROM_ERR;
         }
     }
-    //³õÊ¼»¯ÎÄ¼şĞÅÏ¢
+    //åˆå§‹åŒ–æ–‡ä»¶ä¿¡æ¯
     fs_meta.fileCnt=0;
     fs_meta.firstFile=NULLFILE;
     fs_meta.lastFile=NULLFILE;
@@ -121,7 +121,7 @@ eepromfs_result_t eepromfs_format_quick(void)//¸ñÊ½»¯²»¸Ä±ä´óĞ¡
     
     if(eeprom_handle->write(eeprom_handle,fs_meta.start_address,(unsigned char *)&fs_meta,FS_META_LEN)!=EEPROM_OK)
     {
-        //log ·ÖÇøĞÅÏ¢Ğ´Èë´íÎó
+        //log åˆ†åŒºä¿¡æ¯å†™å…¥é”™è¯¯
 
         return EFR_EEPROM_ERR;
     }
@@ -129,11 +129,11 @@ eepromfs_result_t eepromfs_format_quick(void)//¸ñÊ½»¯²»¸Ä±ä´óĞ¡
 }
 
 /*************************************************************************
-*º¯Êı:eepromfs_format_full
-*¹¦ÄÜ:¸ñÊ½»¯²¢ÖØĞÂÖ¸¶¨´óĞ¡
-*²ÎÊı:startAddr ÆğÊ¼µØÖ·
-      size ´æ´¢Çø´óĞ¡
-*·µ»Ø:²Ù×÷½á¹û
+*å‡½æ•°:eepromfs_format_full
+*åŠŸèƒ½:æ ¼å¼åŒ–å¹¶é‡æ–°æŒ‡å®šå¤§å°
+*å‚æ•°:startAddr èµ·å§‹åœ°å€
+      size å­˜å‚¨åŒºå¤§å°
+*è¿”å›:æ“ä½œç»“æœ
 *************************************************************************/
 eepromfs_result_t eepromfs_format_full(la_t startAddr,efs_size_t size)
 {    
@@ -142,11 +142,11 @@ eepromfs_result_t eepromfs_format_full(la_t startAddr,efs_size_t size)
     int cnt=0;
     if((startAddr+size) > eeprom_handle->size)
     {
-        //log ¿Õ¼ä²»×ã
+        //log ç©ºé—´ä¸è¶³
         
         return EFR_NO_SPACE;
     }
-    //Çå¿Õeeprom¿Õ¼ä
+    //æ¸…ç©ºeepromç©ºé—´
     for(i=0;i<FS_FORMAT_BUFF_LEN;i++)
     {
         buff[i]=0;
@@ -163,12 +163,12 @@ eepromfs_result_t eepromfs_format_full(la_t startAddr,efs_size_t size)
         }
         if(eeprom_handle->write(eeprom_handle,startAddr+i,buff,cnt)!=EEPROM_OK)
         {
-            //log ·ÖÇøĞÅÏ¢Ğ´Èë´íÎó
+            //log åˆ†åŒºä¿¡æ¯å†™å…¥é”™è¯¯
             return EFR_EEPROM_ERR;
         }
         i+=cnt;
     }
-    //³õÊ¼»¯
+    //åˆå§‹åŒ–
     memset(&fs_meta,0,FS_META_LEN);
     fs_meta.start_address=startAddr;    
     fs_meta.fs_size=size;
@@ -179,7 +179,7 @@ eepromfs_result_t eepromfs_format_full(la_t startAddr,efs_size_t size)
     
     if(eeprom_handle->write(eeprom_handle,startAddr,(unsigned char *)&fs_meta,FS_META_LEN)!=EEPROM_OK)
     {
-        //log ·ÖÇøĞÅÏ¢Ğ´Èë´íÎó
+        //log åˆ†åŒºä¿¡æ¯å†™å…¥é”™è¯¯
 
         return EFR_EEPROM_ERR;
     }
@@ -187,8 +187,8 @@ eepromfs_result_t eepromfs_format_full(la_t startAddr,efs_size_t size)
 }
 
 /*************************************************************************
-*º¯Êı:__eepromfs_seekNextFile
-*¹¦ÄÜ:»ñÈ¡ÏÂÒ»¸öÎÄ¼ş²»»á¶ÁÈ¡Êı¾İ£¬ºË¶Ôcrc
+*å‡½æ•°:__eepromfs_seekNextFile
+*åŠŸèƒ½:è·å–ä¸‹ä¸€ä¸ªæ–‡ä»¶ä¸ä¼šè¯»å–æ•°æ®ï¼Œæ ¸å¯¹crc
 *************************************************************************/
 static eepromfs_result_t __eepromfs_seekNextFile(file_handle_t *curFile,file_handle_t *nextFile)
 {
@@ -211,7 +211,7 @@ static eepromfs_result_t __eepromfs_seekLastFile(file_handle_t *fh)
     {
         return EFR_NO_FILE;
     }
-    //¶ÁÈ¡µÚÒ»¸öÎÄ¼ş    
+    //è¯»å–ç¬¬ä¸€ä¸ªæ–‡ä»¶    
     eeprom_addr=fs_meta.firstFile;
     if(eeprom_handle->read(eeprom_handle,fs_meta.firstFile,(unsigned char *)fh,FILE_HANDLE_STORE_LEN)!=EEPROM_OK)
     {
@@ -246,7 +246,7 @@ static eepromfs_result_t __eepromfs_seekFile(file_handle_t *fh,const char* filen
     {
         return EFR_NO_FILE;
     }
-    //¶ÁÈ¡µÚÒ»¸öÎÄ¼ş
+    //è¯»å–ç¬¬ä¸€ä¸ªæ–‡ä»¶
     eeprom_addr=fs_meta.firstFile;
     if(eeprom_handle->read(eeprom_handle,fs_meta.firstFile,(unsigned char *)fh,FILE_HANDLE_STORE_LEN)!=EEPROM_OK)
     {
@@ -278,8 +278,8 @@ static eepromfs_result_t __eepromfs_seekFile(file_handle_t *fh,const char* filen
 
 
 /*************************************************************************
-*º¯Êı:eepromfs_new
-*¹¦ÄÜ:
+*å‡½æ•°:eepromfs_new
+*åŠŸèƒ½:
 *************************************************************************/
 eepromfs_result_t eepromfs_new(file_handle_t *fh,const char* filename,efs_size_t fileSize)
 {
@@ -292,18 +292,18 @@ eepromfs_result_t eepromfs_new(file_handle_t *fh,const char* filename,efs_size_t
     {
         return EFR_META_ERR;
     }
-    //²éÕÒÎÄ¼şÃûÊÇ·ñ´æÔÚ
+    //æŸ¥æ‰¾æ–‡ä»¶åæ˜¯å¦å­˜åœ¨
     ret=__eepromfs_seekFile(&fileTemp,filename);
     if(ret!=EFR_NO_FILE)
     {
         if(ret==EFR_OK)
         {
-            //ÎÄ¼şÃû´æÔÚ
+            //æ–‡ä»¶åå­˜åœ¨
             return EFR_EXIST_FILENAME;
         }
         if(ret==EFR_EEPROM_ERR)
         {
-            //Eeprom´íÎó
+            //Eepromé”™è¯¯
             return EFR_EEPROM_ERR;
         }
         if(ret==EFR_FILEADDR_ERR)
@@ -313,27 +313,27 @@ eepromfs_result_t eepromfs_new(file_handle_t *fh,const char* filename,efs_size_t
     }
     if(strlen(filename)>(FILENAME_LEN-1))
     {
-        //ÎÄ¼şÃû¹ı³¤
+        //æ–‡ä»¶åè¿‡é•¿
         
         return EFR_FILENAME_TOOLONG;
     }
 
     if(fileSize>=FS_BUFF_LEN)
     {
-        //ÎÄ¼ş¹ı´ó
+        //æ–‡ä»¶è¿‡å¤§
         
         return EFR_FILE_TOOLARGE;
     }
     
-    //Ê£Óà´æ´¢¿Õ¼äÅĞ¶Ï
+    //å‰©ä½™å­˜å‚¨ç©ºé—´åˆ¤æ–­
     ret=__eepromfs_seekLastFile(&fileTemp);
     if(ret==EFR_OK)
     {
-        //Ê£Óà¿Õ¼äÅĞ¶Ï,¼òµ¥×·¼ÓÔÚÄ©Î²
+        //å‰©ä½™ç©ºé—´åˆ¤æ–­,ç®€å•è¿½åŠ åœ¨æœ«å°¾
         addr=fileTemp.cur+FILE_HANDLE_STORE_LEN+fileTemp.dataSize;
         prevAddr=fileTemp.cur;
     }
-    else if(ret==EFR_NO_FILE)//Ã»ÓĞÎÄ¼ş
+    else if(ret==EFR_NO_FILE)//æ²¡æœ‰æ–‡ä»¶
     {
         addr=fs_meta.start_address+FS_META_LEN;
         prevAddr=NULLFILE;
@@ -344,11 +344,11 @@ eepromfs_result_t eepromfs_new(file_handle_t *fh,const char* filename,efs_size_t
     }
     if((addr+FILE_HANDLE_STORE_LEN+fileSize)>(fs_meta.start_address+fs_meta.fs_size))
     {
-        //¿Õ¼ä²»×ã
+        //ç©ºé—´ä¸è¶³
 
         return EFR_NO_SPACE;
     }
-    //³õÊ¼»¯ÎÄ¼ş¾ä±ú
+    //åˆå§‹åŒ–æ–‡ä»¶å¥æŸ„
     memset(fh,0,sizeof(file_handle_t));    
     fh->cur=addr;    
     fh->prev=prevAddr;
@@ -356,45 +356,45 @@ eepromfs_result_t eepromfs_new(file_handle_t *fh,const char* filename,efs_size_t
     strncpy(fh->filename,filename,FILENAME_LEN);
     fh->filename[FILENAME_LEN-1]='\0';
     fh->dataSize=fileSize;
-    fh->fileCrc=Math_CRC16_LH((unsigned char *)fh,FILE_HANDLE_INFO_LEN);//·Ö¶Î¼ÆËãCRC  
-    //µØÖ·ĞÅÏ¢¼ÆËã    
+    fh->fileCrc=Math_CRC16_LH((unsigned char *)fh,FILE_HANDLE_INFO_LEN);//åˆ†æ®µè®¡ç®—CRC  
+    //åœ°å€ä¿¡æ¯è®¡ç®—    
     fh->addr_fileCrc=fh->cur+FILE_HANDLE_INFO_LEN;
     fh->addr_dataCrc=fh->addr_fileCrc+2;
     fh->addr_firstData=fh->addr_dataCrc+2;
     fh->addr_lastData=fh->addr_firstData+fh->dataSize-1;
     fh->opWriteCnt=0;
-    //Êı¾İÇå¿Õ²¢¸üĞÂCrc
+    //æ•°æ®æ¸…ç©ºå¹¶æ›´æ–°Crc
     for(i=0;i<fh->dataSize;i++)
     {
         fs_buff[i]=0;
     }
-    fh->dataCrc=Math_CRC16_LH(fs_buff,fh->dataSize);//·Ö¶Î¼ÆËãCRC  
-    //ÎÄ¼şĞÅÏ¢¼°ĞÅÏ¢Crc¼°Êı¾İCrc
+    fh->dataCrc=Math_CRC16_LH(fs_buff,fh->dataSize);//åˆ†æ®µè®¡ç®—CRC  
+    //æ–‡ä»¶ä¿¡æ¯åŠä¿¡æ¯CrcåŠæ•°æ®Crc
     if(eeprom_handle->write(eeprom_handle,fh->cur,(unsigned char *)fh,FILE_HANDLE_STORE_LEN)!=EEPROM_OK)
     {
-        //log ·ÖÇøĞÅÏ¢Ğ´Èë´íÎó
+        //log åˆ†åŒºä¿¡æ¯å†™å…¥é”™è¯¯
         return EFR_EEPROM_ERR;
     }
-    //Êı¾İ
+    //æ•°æ®
     if(eeprom_handle->write(eeprom_handle,fh->addr_firstData,fs_buff,fh->dataSize)!=EEPROM_OK)
     {
-        //log ·ÖÇøĞÅÏ¢Ğ´Èë´íÎó
+        //log åˆ†åŒºä¿¡æ¯å†™å…¥é”™è¯¯
         return EFR_EEPROM_ERR;
     }
-    //¸üĞÂ×îºóÒ»¸öÎÄ¼şÁ´½Ó
+    //æ›´æ–°æœ€åä¸€ä¸ªæ–‡ä»¶é“¾æ¥
     if(prevAddr!=NULLFILE)
     {
         fileTemp.next=addr;
         fileTemp.fileCrc=Math_CRC16_LH((unsigned char *)&fileTemp,FILE_HANDLE_INFO_LEN);    
         if(eeprom_handle->write(eeprom_handle,fileTemp.cur,(unsigned char *)&fileTemp,FILE_HANDLE_STORE_LEN)!=EEPROM_OK)
         {
-            //×îºóÒ»¸öÎÄ¼şĞÅÏ¢¸üĞÂÒì³£
+            //æœ€åä¸€ä¸ªæ–‡ä»¶ä¿¡æ¯æ›´æ–°å¼‚å¸¸
             return EFR_EEPROM_ERR;
         }
     }
 
-    //¸üĞÂÇøÓòĞÅÏ¢
-    if(prevAddr==NULLFILE)//µÚÒ»¸öÎÄ¼ş
+    //æ›´æ–°åŒºåŸŸä¿¡æ¯
+    if(prevAddr==NULLFILE)//ç¬¬ä¸€ä¸ªæ–‡ä»¶
     {
         fs_meta.firstFile=addr;
     }
@@ -404,7 +404,7 @@ eepromfs_result_t eepromfs_new(file_handle_t *fh,const char* filename,efs_size_t
     
     if(eeprom_handle->write(eeprom_handle,fs_meta.start_address,(unsigned char *)&fs_meta,FS_META_LEN)!=EEPROM_OK)
     {
-        //×îºóÒ»¸öÎÄ¼şĞÅÏ¢¸üĞÂÒì³£
+        //æœ€åä¸€ä¸ªæ–‡ä»¶ä¿¡æ¯æ›´æ–°å¼‚å¸¸
         return EFR_EEPROM_ERR;
     }
 	return EFR_OK;
@@ -418,30 +418,30 @@ eepromfs_result_t eepromfs_open(file_handle_t *fh,const char* filename)
         return EFR_META_ERR;
     }    
     memset(fh,0,sizeof(file_handle_t));    
-    //²éÕÒÎÄ¼şÃûÊÇ·ñ´æÔÚ
+    //æŸ¥æ‰¾æ–‡ä»¶åæ˜¯å¦å­˜åœ¨
     ret=__eepromfs_seekFile(fh,filename);
     if(ret==EFR_OK)
     {
-        //ÎÄ¼şÃû´æÔÚ
-        //»ñÈ¡ÎÄ¼ş·ÖÇøĞÅÏ¢Ğ£ÑéºË¶Ô
+        //æ–‡ä»¶åå­˜åœ¨
+        //è·å–æ–‡ä»¶åˆ†åŒºä¿¡æ¯æ ¡éªŒæ ¸å¯¹
         if(fh->fileCrc!=Math_CRC16_LH((unsigned char *)fh,FILE_HANDLE_INFO_LEN))
         {
             return EFR_CRC_INFO_ERR;
         }
         
-        //¸üĞÂµØÖ·ĞÅÏ¢
+        //æ›´æ–°åœ°å€ä¿¡æ¯
         fh->addr_fileCrc=fh->cur+FILE_HANDLE_INFO_LEN;
         fh->addr_dataCrc=fh->addr_fileCrc+2;
         fh->addr_firstData=fh->addr_dataCrc+2;
         fh->addr_lastData=fh->addr_firstData+fh->dataSize-1;
         
-        //Êı¾İ
+        //æ•°æ®
         if(eeprom_handle->read(eeprom_handle,fh->addr_firstData,fs_buff,fh->dataSize)!=EEPROM_OK)
         {
             return EFR_EEPROM_ERR;
         }
         
-        //crcĞ£Ñé        
+        //crcæ ¡éªŒ        
         if(fh->dataCrc!=Math_CRC16_LH(fs_buff,fh->dataSize))
         {
             return EFR_CRC_DATA_ERR;
@@ -460,22 +460,22 @@ eepromfs_result_t eepromfs_close(file_handle_t* fh)
         return EFR_PARA_ERR;
     }
     
-    //crcĞ£Ñé        
-    crcTemp=Math_CRC16_LH(fs_buff,fh->dataSize);//·Ö¶Î¼ÆËãCRC
+    //crcæ ¡éªŒ        
+    crcTemp=Math_CRC16_LH(fs_buff,fh->dataSize);//åˆ†æ®µè®¡ç®—CRC
     if((fh->dataCrc!=crcTemp)||(fh->opWriteCnt>0))
     {
         fh->dataCrc=crcTemp;
         
-        //Êı¾İ
+        //æ•°æ®
         if(eeprom_handle->write(eeprom_handle,fh->addr_firstData,fs_buff,fh->dataSize)!=EEPROM_OK)
         {
-            //Ğ´Èë´íÎó
+            //å†™å…¥é”™è¯¯
             return EFR_EEPROM_ERR;
         }
         //Crc
         if(eeprom_handle->write(eeprom_handle,fh->addr_dataCrc,(unsigned char *)&fh->dataCrc,2)!=EEPROM_OK)
         {
-            //Ğ´Èë´íÎó
+            //å†™å…¥é”™è¯¯
             return EFR_EEPROM_ERR;
         }
     }
@@ -494,7 +494,7 @@ eepromfs_result_t eepromfs_write(file_handle_t* fh, const fdata_t* data, efs_siz
     {
         return EFR_NO_SPACE;
     }
-    //¸üĞÂ»º´æÇøÊı¾İ
+    //æ›´æ–°ç¼“å­˜åŒºæ•°æ®
     for(i=0;(i<size)&&(i<fh->dataSize);i++)
     {
         fs_buff[i]=data[i];
@@ -515,7 +515,7 @@ eepromfs_result_t eepromfs_offsetWrite(file_handle_t* fh,la_t offSet,const fdata
     {
         return EFR_NO_SPACE;
     }
-    //¸üĞÂ»º´æÇøÊı¾İ
+    //æ›´æ–°ç¼“å­˜åŒºæ•°æ®
     for(i=0;(i<size)&&((offSet+i)<fh->dataSize);i++)
     {
         fs_buff[i+offSet]=data[i];
@@ -531,7 +531,7 @@ eepromfs_result_t eepromfs_read(file_handle_t* fh, fdata_t* buf,efs_size_t bufLe
     {
         return EFR_PARA_ERR;
     }
-    //¸üĞÂ»º´æÇøÊı¾İ
+    //æ›´æ–°ç¼“å­˜åŒºæ•°æ®
     for(i=0;(i<bufLen)&&(i<fh->dataSize);i++)
     {
         buf[i]=fs_buff[i];
@@ -549,26 +549,26 @@ eepromfs_result_t eepromfs_delete(const char* filename)
 }
 
 /*************************************************************************
-*º¯Êı:eepromfs_copy
-*¹¦ÄÜ:·ÖÇø¿½±´
+*å‡½æ•°:eepromfs_copy
+*åŠŸèƒ½:åˆ†åŒºæ‹·è´
 *************************************************************************/
 eepromfs_result_t eepromfs_copy(eeprom_handle_t *handle,la_t destAddr,la_t srcAddr,efs_size_t size)
 {    
     int i=0;
     unsigned char buff[FS_FORMAT_BUFF_LEN];
     int cnt=0;    
-    //»ñÈ¡ÎÄ¼ş·ÖÇøĞÅÏ¢,²¢ºË¶Ô·ÖÇø´óĞ¡Ö¸¶¨ÊÇ·ñÕıÈ·
+    //è·å–æ–‡ä»¶åˆ†åŒºä¿¡æ¯,å¹¶æ ¸å¯¹åˆ†åŒºå¤§å°æŒ‡å®šæ˜¯å¦æ­£ç¡®
     if(eepromfs_init(handle,srcAddr)!=EEPROM_OK)
     {
         return EFR_ERR;
     }
-    //Ö¸¶¨·ÖÇø´óĞ¡Òì³£
+    //æŒ‡å®šåˆ†åŒºå¤§å°å¼‚å¸¸
     if(fs_meta.fs_size!=size)
     {
         return EFR_ERR;
     }
-    //¿½±´·ÖÇøÊı¾İ
-    for(i=0;i<fs_meta.fs_size;i++)
+    //æ‹·è´åˆ†åŒºæ•°æ®
+    for(i=0;i<fs_meta.fs_size;)
     {
         if((i+FS_FORMAT_BUFF_LEN)<=fs_meta.fs_size)
         {
@@ -589,19 +589,19 @@ eepromfs_result_t eepromfs_copy(eeprom_handle_t *handle,la_t destAddr,la_t srcAd
         i+=cnt;
     }  
 
-    //»ñÈ¡ÎÄ¼ş·ÖÇøĞÅÏ¢
+    //è·å–æ–‡ä»¶åˆ†åŒºä¿¡æ¯
     if(eeprom_handle->read(eeprom_handle,destAddr,(unsigned char *)&fs_meta,FS_META_LEN)!=EEPROM_OK)
     {
-        fs_meta.fs_size=0;//±êÊ¶·ÖÇøÎ´³õÊ¼»¯
-        //log·ÖÇøĞÅÏ¢¶ÁÈ¡´íÎó
+        fs_meta.fs_size=0;//æ ‡è¯†åˆ†åŒºæœªåˆå§‹åŒ–
+        //logåˆ†åŒºä¿¡æ¯è¯»å–é”™è¯¯
         return EFR_EEPROM_ERR;
     }
-    //ÖØ½¨·ÖÇøĞÅÏ¢
+    //é‡å»ºåˆ†åŒºä¿¡æ¯
     fs_meta.start_address=destAddr;    
     fs_meta.fsCrc=Math_CRC16_LH((unsigned char *)&fs_meta,FS_META_LEN-2);
     if(eeprom_handle->write(eeprom_handle,destAddr,(unsigned char *)&fs_meta,FS_META_LEN)!=EEPROM_OK)
     {
-        //log ·ÖÇøĞÅÏ¢Ğ´Èë´íÎó
+        //log åˆ†åŒºä¿¡æ¯å†™å…¥é”™è¯¯
         return EFR_EEPROM_ERR;
     }
     return EFR_OK;
